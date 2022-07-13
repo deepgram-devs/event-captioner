@@ -12,7 +12,9 @@
         <header class="bg-fireEngine py-5 p-4 sm:py-4 fixed w-full" :class="{ hidden: !settings.brand }">
             <h1 class="flex justify-center items-center text-white gap-4 text-xl">
                 <span class="text-sm sm:text-base">Provided by</span>
-                <img src="/long-logo-white.svg" alt="Deepgram" class="w-36 sm:w-56">
+                <a href="https://developers.deepgram.com">
+                    <img src="/long-logo-white.svg" alt="Deepgram" class="w-36 sm:w-56">
+                </a>
             </h1>
         </header>
 
@@ -42,8 +44,6 @@
         </div>
         <div :style="`${settings.brand ? 'min-height: calc(100vh - 3.5rem);' : 'min-height: 100vh;'}`" class="flex flex-col">
             <div id="transcript" class="p-6 flex-1" :style="settings.string">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Inventore, eligendi quaerat in libero saepe eos sequi perferendis sit dolorem ipsam fugit adipisci officiis voluptas totam illo obcaecati blanditiis a maiores. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quos id nesciunt quod sapiente harum repellat quaerat asperiores totam est quam? Quos illum adipisci numquam rem, ad laboriosam fugiat dignissimos quae.
-                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ducimus impedit nam dolore sequi, exercitationem incidunt labore dicta quia, totam quod ex blanditiis rerum numquam voluptas aspernatur officia, odit placeat velit? Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugiat officia eos voluptatum odit nihil. Quis optio fugiat dignissimos asperiores maxime soluta placeat voluptate quaerat? Corporis quas suscipit sed aut soluta? Lorem ipsum dolor sit amet consectetur adipisicing elit. Est rerum adipisci, quod nihil quo nesciunt corrupti a iste architecto maiores sed sapiente fuga quas in ipsam corporis? Quaerat, quibusdam molestias.
                 {% transcript %}
             </div>
             <div v-if="settings.link" class="bg-coral text-2xl text-center p-3">Open captions on your own device: {% location.host+location.pathname %}</div>

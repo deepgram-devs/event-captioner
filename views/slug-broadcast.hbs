@@ -96,6 +96,7 @@
             const data = JSON.parse(message.data)
             const transcript = data.channel.alternatives[0].transcript
             if(transcript && data.is_final) {
+                console.log(transcript)
                 document.querySelector('#status').textContent += transcript + ' '
                 socket.emit('transcriptReady', transcript)
             }
