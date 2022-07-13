@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/output.css" rel="stylesheet">
+    <title>Deepgram x {{ event.title }}</title>
+</head>
+<body>
+    <div id="app">
+
+        <header class="bg-fireEngine py-5 p-4 sm:py-4 fixed w-full" :class="{ hidden: !settings.brand }">
+            <h1 class="flex justify-center items-center text-white gap-4 text-xl">
+                <span class="text-sm sm:text-base">Provided by</span>
+                <img src="/long-logo-white.svg" alt="Deepgram" class="w-36 sm:w-56">
+            </h1>
+        </header>
+
+        <div :class="{ 'pt-14': settings.brand }">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 fixed top-[17px] right-[17px] z-10 cursor-pointer" :class="{ 'hidden': !settings.brand }" viewBox="0 0 20 20" fill="white" @click="settings.visible = !settings.visible">
+                <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+            </svg>
+            <div id="settings" class="p-4 bg-coral text-darkCharcoal top-[60px] left-0 w-full flex items-center gap-2 sm:gap-8 flex-col sm:flex-row" :class="{ hidden: !settings.visible, fixed: settings.visible, '!top-0': !settings.brand }">
+                <div class="flex items-center">
+                    <span class="font-bold mr-2">Autoscroll</span>
+                    <input type="radio" id="autoscroll-true" :value="true" v-model="settings.autoScroll" />
+                    <label for="autoscroll-true" class="mr-2">On</label>
+                    <input type="radio" id="autoscroll-false" :value="false" v-model="settings.autoScroll" />
+                    <label for="autoscroll-false">Off</label>
+                </div>
+                <div class="flex items-center">
+                    <span class="font-bold mr-2">Show Link</span>
+                    <input type="radio" id="link-true" :value="true" v-model="settings.link" />
+                    <label for="link-true" class="mr-2">On</label>
+                    <input type="radio" id="link-false" :value="false" v-model="settings.link" />
+                    <label for="link-false">Off</label>
+                </div>
+                <div class="flex-1 flex w-full">
+                    <input type="text" v-model="settings.string" class="w-full">
+                </div>
+            </div>
+        </div>
+        <div :style="`${settings.brand ? 'min-height: calc(100vh - 3.5rem);' : 'min-height: 100vh;'}`" class="flex flex-col">
+            <div id="transcript" class="p-6 flex-1" :style="settings.string">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Inventore, eligendi quaerat in libero saepe eos sequi perferendis sit dolorem ipsam fugit adipisci officiis voluptas totam illo obcaecati blanditiis a maiores. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quos id nesciunt quod sapiente harum repellat quaerat asperiores totam est quam? Quos illum adipisci numquam rem, ad laboriosam fugiat dignissimos quae.
+                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ducimus impedit nam dolore sequi, exercitationem incidunt labore dicta quia, totam quod ex blanditiis rerum numquam voluptas aspernatur officia, odit placeat velit? Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugiat officia eos voluptatum odit nihil. Quis optio fugiat dignissimos asperiores maxime soluta placeat voluptate quaerat? Corporis quas suscipit sed aut soluta? Lorem ipsum dolor sit amet consectetur adipisicing elit. Est rerum adipisci, quod nihil quo nesciunt corrupti a iste architecto maiores sed sapiente fuga quas in ipsam corporis? Quaerat, quibusdam molestias.
+                {% transcript %}
+            </div>
+            <div v-if="settings.link" class="bg-coral text-2xl text-center p-3">Open captions on your own device: {% location.host+location.pathname %}</div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.4"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        const app = new Vue({
+            el: '#app',
+            delimiters: ['{%', '%}'],
+            data: {
+                socket: null,
+                transcript: '',
+                settings: {
+                    visible: false,
+                    autoScroll: true,
+                    brand: true,
+                    link: false,
+                    string: 'background: #141E29; font-size: 3rem; line-height: 1.5em; color: white;'
+                }
+            },
+            created() {
+                if(new URL(location.href).searchParams.get('brand') == 'false') this.settings.brand = false
+                this.socket = io()
+                this.socket.emit('join', { room: new URL(location.href).pathname.split('/')[2], role: 'client' })
+                this.socket.on('transcriptComplete', message => {
+                    this.transcript += message + ' '
+                })
+                setInterval(() => {
+                    if(this.settings.autoScroll) window.scrollTo(0, document.body.scrollHeight)
+                }, 20);
+                window.addEventListener('keypress', this.onKeyPress);
+            },
+            methods: {
+                onKeyPress(e) {
+                    if(e.key == '?') this.settings.visible = !this.settings.visible
+                }
+            }
+        })
+    </script>
+</body>
+</html>

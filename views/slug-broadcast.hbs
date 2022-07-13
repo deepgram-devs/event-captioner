@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/output.css" rel="stylesheet">
+    <title>Deepgram x {{ event.title }}</title>
+</head>
+<body class="bg-darkCharcoal text-white">
+    <header class="bg-fireEngine p-8 text-center">
+        <div class="max-w-2xl mx-auto">
+            <h1 class="text-2xl font-bold">{{ event.title }} Captions Powered by Deepgram</h1>
+            <p>This pane is intended for organizers/producers only.</p>
+        </div>
+    </header>
+
+    <div class="bg-gray-200 m-6 p-6 text-darkCharcoal rounded grid md:grid-cols-3 gap-4 md:gap-6">
+        <div>
+            <h2>Step 1</h2>
+            <p>Ensure your speaker's voice can be captured as a mic in this browser.</p>
+            <div class="flex gap-4 items-center">
+                <button id="access-mic">Access mic</button>
+                <svg xmlns="http://www.w3.org/2000/svg" id="mic-success" class="h-5 w-5 mt-2 text-grass hidden" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+            </div>
+        </div>
+        <div>
+            <h2>Step 2</h2>
+            <p>Enter the broadcaster key provided to you by the Deepgram team.</p>
+            <form class="flex gap-4 items-center mt-2">
+                <input type="text" id="key" name="key" class="border-2 text-base" />
+                <input type="submit" value="Submit" id="submit-key" class="!mt-0 cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" id="key-success" class="h-5 w-5 text-grass hidden" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+            </form>
+        </div>
+        <div>
+            <h2>Step 3</h2>
+            <p>Open the audience page in another browser. Keep this page open in the background.</p>
+            <a id="public" class="button" target="_blank">Open audience page</a>
+        </div>
+    </div>
+
+    <p id="status" class="p-6 text-xl" class="hidden"></span></p>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const url = new URL(location.href)
+        const slug = url.pathname.split('/')[2]
+
+        const public = document.querySelector('#public')
+        const publicUrl = url.href.split('/broadcast')[0]
+        public.setAttribute('href', publicUrl)
+
+        const socket = io()
+        socket.emit('join', { room: slug, role: 'broadcaster' })
+
+        document.querySelector('#access-mic').addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+                mediaRecorder = new MediaRecorder(stream)
+                document.querySelector('#mic-success').classList.remove('hidden')
+            } catch(err) {
+                alert('You must provide access to the microphone')
+            }
+        })
+
+        document.querySelector('form').addEventListener('submit', async event => {
+            event.preventDefault()
+            const key = document.querySelector('#key').value
+
+            const resp = await fetch(`/events/${slug}/auth`, {
+                method: 'POST',
+                body: JSON.stringify({ slug, key }),
+                headers: { 'Content-Type': 'application/json' }
+            }).then(r => r.json()).catch(error => alert(error))
+            if(resp.error) return alert(resp.error)
+
+            document.querySelector('#submit-key').setAttribute('disabled', true)
+            document.querySelector('#status').classList.remove('hidden')
+            document.querySelector('#key-success').classList.remove('hidden')
+
+            ws = new WebSocket('wss://api.deepgram.com/v1/listen?tier=enhanced&punctuate=true', [ 'token', resp.deepgramToken ])
+            ws.onopen = start
+            ws.onmessage = handleResponse
+        })
+
+        function start() {
+            mediaRecorder.addEventListener('dataavailable', event => {
+                if (event.data.size > 0 && ws.readyState == 1) {
+                ws.send(event.data)
+                }
+            })
+            mediaRecorder.start(250)
+        }
+
+        function handleResponse(message) {
+            const data = JSON.parse(message.data)
+            const transcript = data.channel.alternatives[0].transcript
+            if(transcript && data.is_final) {
+                document.querySelector('#status').textContent += transcript + ' '
+                socket.emit('transcriptReady', transcript)
+            }
+        }
+    </script>
+</body>
+</html>
