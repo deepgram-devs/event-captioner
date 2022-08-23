@@ -8,6 +8,7 @@ module.exports = {
         },
         extend: {
             colors: {
+                veryDarkCharcoal: '#12171c',
                 darkCharcoal: '#141E29',
                 midCharcoal: '#1D2630',
                 fireEngine: '#FB3640',
