@@ -18,8 +18,12 @@ app.get('/', (req, res) => { res.redirect('https://developers.deepgram.com') })
 app.get('/events', (req, res) => { res.redirect('/') })
 
 app.get('/events/:slug', async (req, res) => {
-    const event = await getEvent(req.params.slug)
-    res.render('slug', { event })
+    try {
+        const event = await getEvent(req.params.slug)
+        res.render('slug', { event })
+    } catch(error) {
+        res.render('error', { slug: req.params.slug, code: error })
+    }
 })
 
 app.get('/events/:slug/broadcast', async (req, res) => {
@@ -27,7 +31,7 @@ app.get('/events/:slug/broadcast', async (req, res) => {
         const event = await getEvent(req.params.slug)
         res.render('slug-broadcast', { event })
     } catch(error) {
-        res.render('error', { code: error })
+        res.render('error', { slug: req.params.slug, code: error })
     }
 })
 
