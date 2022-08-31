@@ -101,6 +101,7 @@
             if(transcript && data.is_final) {
                 console.log('got new transcript from dg', new Date().toISOString())
                 document.querySelector('#status').textContent += transcript + ' '
+                socket.emit('join', { room: slug, role: 'broadcaster' })
                 socket.emit('transcriptReady', transcript)
             }
         }

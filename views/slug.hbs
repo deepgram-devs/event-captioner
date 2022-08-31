@@ -71,15 +71,7 @@
             },
             created() {
                 if(new URL(location.href).searchParams.get('brand') == 'false') this.settings.brand = false
-                this.socket = io()
-                this.socket.emit('join', { room: new URL(location.href).pathname.split('/')[2], role: 'client' })
-                this.socket.on('transcriptComplete', message => {
-                    console.log('got new transcript from signalling server', new Date().toISOString())
-                    this.transcript += message + ' '
-                })
-                this.socket.on('disconnect', () => {
-                    console.log('socket disconnected')
-                })
+                this.initSocket()
                 setInterval(() => {
                     if(this.settings.autoScroll) window.scrollTo(0, document.body.scrollHeight)
                 }, 20);
@@ -88,6 +80,25 @@
             methods: {
                 onKeyPress(e) {
                     if(e.key == '?') this.settings.visible = !this.settings.visible
+                },
+                initSocket() {
+                    this.socket = io()
+                    this.socket.connect()
+
+                    this.socket.on('connect', () => {
+                        this.socket.emit('join', { room: new URL(location.href).pathname.split('/')[2], role: 'client' })
+                    })
+
+                    this.socket.on('transcriptComplete', message => {
+                        console.log('got new transcript from signalling server', new Date().toISOString())
+                        this.transcript += message + ' '
+                    })
+
+                    this.socket.on('disconnect', reason => {
+                        if (reason === "io server disconnect") {
+                            this.socket.connect()
+                        }
+                    })
                 }
             }
         })
