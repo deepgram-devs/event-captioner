@@ -20,7 +20,7 @@ app.get('/events', (req, res) => { res.redirect('/') })
 app.get('/events/:slug', async (req, res) => {
     try {
         const event = await getEvent(req.params.slug)
-        res.render('slug', { event })
+        res.render('slug', { event: { title: event.title } })
     } catch(error) {
         res.render('error', { slug: req.params.slug, code: error })
     }
@@ -29,7 +29,7 @@ app.get('/events/:slug', async (req, res) => {
 app.get('/events/:slug/broadcast', async (req, res) => {
     try {
         const event = await getEvent(req.params.slug)
-        res.render('slug-broadcast', { event })
+        res.render('slug-broadcast', { event: { title: event.title } })
     } catch(error) {
         res.render('error', { slug: req.params.slug, code: error })
     }
@@ -39,7 +39,7 @@ app.post('/events/:slug/auth', async (req, res) => {
     try {
         const { slug, key } = req.body
         const event = await getEvent(slug)
-        if(req.body.key != event.publisher_key) return res.json({ error: 'Key is missing or incorrect' })
+        if(key != event.publisher_key) return res.json({ error: 'Key is missing or incorrect' })
         const deepgram = new Deepgram(event.dg_key)
         const newKey = await deepgram.keys.create(
             event.dg_proj,

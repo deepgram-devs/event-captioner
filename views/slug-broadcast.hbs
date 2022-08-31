@@ -52,6 +52,9 @@
 
         const socket = io()
         socket.emit('join', { room: slug, role: 'broadcaster' })
+        socket.on('disconnect', () => {
+            console.log('socket disconnected')
+        })
 
         document.querySelector('#access-mic').addEventListener('click', async () => {
             try {
@@ -96,7 +99,7 @@
             const data = JSON.parse(message.data)
             const transcript = data.channel.alternatives[0].transcript
             if(transcript && data.is_final) {
-                console.log(transcript)
+                console.log('got new transcript from dg', new Date().toISOString())
                 document.querySelector('#status').textContent += transcript + ' '
                 socket.emit('transcriptReady', transcript)
             }

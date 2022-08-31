@@ -74,7 +74,11 @@
                 this.socket = io()
                 this.socket.emit('join', { room: new URL(location.href).pathname.split('/')[2], role: 'client' })
                 this.socket.on('transcriptComplete', message => {
+                    console.log('got new transcript from signalling server', new Date().toISOString())
                     this.transcript += message + ' '
+                })
+                this.socket.on('disconnect', () => {
+                    console.log('socket disconnected')
                 })
                 setInterval(() => {
                     if(this.settings.autoScroll) window.scrollTo(0, document.body.scrollHeight)
