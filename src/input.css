@@ -9,7 +9,7 @@ h2 {
 }
 
 button, input[type=submit], .button {
-    @apply inline-block bg-meadow px-2 py-1 rounded mt-2;
+    @apply inline-block bg-meadow px-2 py-1 rounded mt-2 text-darkCharcoal;
 }
 
 input[type=text] {

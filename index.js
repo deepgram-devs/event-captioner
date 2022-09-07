@@ -1,6 +1,7 @@
 require('dotenv').config()
 const http = require('http')
 const express = require('express')
+const multer = require('multer')
 const Socket = require("socket.io").Server
 const { Deepgram } = require('@deepgram/sdk')
 const Airtable = require('airtable');
@@ -9,6 +10,8 @@ const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process
 const app = express()
 const server = http.createServer(app)
 const io = new Socket(server)
+
+const upload = multer({ storage: multer.memoryStorage() })
 
 app.set('view engine', 'hbs')
 app.use(express.static('public'))
@@ -33,6 +36,31 @@ app.get('/events/:slug/broadcast', async (req, res) => {
     } catch(error) {
         res.render('error', { slug: req.params.slug, code: error })
     }
+})
+
+app.get('/events/:slug/post', async (req, res) => {
+    try {
+        const event = await getEvent(req.params.slug)
+        res.render('slug-post', { event: { title: event.title } })
+    } catch(error) {
+        res.render('error', { slug: req.params.slug, code: error })
+    }
+})
+
+app.post('/events/:slug/post/transcribe', upload.single('file'), async(req, res) => {
+    const event = await getEvent(req.params.slug)
+    if(req.body.key != event.publisher_key) return res.json({ error: 'Key is missing or incorrect' })
+    const deepgram = new Deepgram(event.dg_key)
+    const { mimetype, buffer } = req.file
+    const options = { paragraphs: true, punctuate: true, utterances: true, diarize: true, tier: 'enhanced' }
+    deepgram.transcription.preRecorded({ buffer, mimetype }, options)
+    .then(response => {
+        const { transcript } = response.results.channels[0].alternatives[0].paragraphs
+        const webvtt = response.toWebVTT()
+        const srt = response.toSRT()
+        res.send({ transcript, files: { webvtt, srt } })
+    })
+    .catch(error => { res.json({ error }) })
 })
 
 app.post('/events/:slug/auth', async (req, res) => {

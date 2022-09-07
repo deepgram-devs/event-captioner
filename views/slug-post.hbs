@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/output.css" rel="stylesheet">
+    <title>Deepgram x {{ event.title }}</title>
+</head>
+<body class="bg-darkCharcoal text-white">
+    <header class="bg-fireEngine p-8 text-center">
+        <div class="max-w-2xl mx-auto">
+            <h1 class="text-2xl font-bold">{{ event.title }} Post-Event Management</h1>
+            <p>This pane is intended for organizers/producers only.</p>
+            <p>Smaller files = quicker transcripts. We accept video or audio files.</p>
+        </div>
+    </header>
+
+    <div class="bg-gray-200 m-6 p-6 text-darkCharcoal rounded">
+        <form class="grid grid-cols-2 gap-x-6 gap-y-4">
+            <input id="passphrase" type="password" name="passphrase" placeholder="Key" required>
+            <input id="file" type="file" name="file" required>
+            <input type="submit" value="Get transcription" class="col-span-2">
+        </form>
+    </div>
+
+    <div id="message" class="text-center"></div>
+
+    <script>
+        const form = document.querySelector('form')
+        const fileInput = document.getElementById('file')
+        const passphrase = document.getElementById('passphrase')
+        const message = document.getElementById('message')
+        let file
+
+        handleAudioFile = e => {
+            file = e.target.files
+            for (let i = 0; i <= file.length - 1; i++) { file = file[i] }
+        }
+        fileInput.addEventListener('change', handleAudioFile)
+
+        form.addEventListener('submit', e => {
+            e.preventDefault()
+            if(!file) return alert('You must select a file')
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('key', passphrase.value)
+            message.textContent = 'Uploading file & generating transcript...'
+
+            fetch(location.pathname + '/transcribe', {
+                method: 'post',
+                body: formData,
+            })
+            .then(r => r.json())
+            .then(res => {
+                if(res.error) return alert(res.error)
+                stringToDownload(res.files.srt, `${file.name}.srt`)
+                stringToDownload(res.files.webvtt, `${file.name}.vtt`)
+                stringToDownload(res.transcript, `${file.name}.txt`)
+                message.textContent = 'Downloading output files for ' + file.name
+            })
+            .catch(err => console.log('Error occurred', err))
+
+        })
+
+        function stringToDownload(string, filename) {
+            const file = new File([string], filename, { type: 'text/plain' })
+            const link = document.createElement('a')
+            const url = URL.createObjectURL(file)
+            link.href = url
+            link.download = file.name
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            window.URL.revokeObjectURL(url)
+        }
+    </script>
+</body>
+</html>
