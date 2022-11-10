@@ -1,17 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+@import url(../public/inter.css);
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+html {
+  @apply font-inter;
+}
+
 h2 {
-    @apply text-xl font-bold;
+  @apply text-xl font-bold;
 }
 
-button, input[type=submit], .button {
-    @apply inline-block bg-meadow px-2 py-1 rounded mt-2 text-darkCharcoal;
+button,
+input[type="submit"],
+.button {
+  @apply inline-block bg-meadow px-2 py-1 rounded mt-2 text-darkCharcoal;
 }
 
-input[type=text] {
-    @apply px-2 py-1 text-base rounded;
+input[type="text"] {
+  @apply px-2 py-1 text-base rounded;
 }

@@ -21,11 +21,11 @@
     
     <div id="app">
 
-        <header class="bg-fireEngine py-5 p-4 sm:py-4 fixed w-full" :class="{ hidden: !settings.brand }">
-            <h1 class="flex justify-center items-center text-white gap-4 text-xl">
-                <span class="text-sm sm:text-base">Provided by</span>
+        <header class="py-5 p-4 sm:py-4 fixed w-full" :class="{ hidden: !settings.brand }" style="background: linear-gradient(270deg,#38edac 20.31%,#9ea9ff 52.6%,#fe5c5c 81.77%)">
+            <h1 class="flex justify-center items-center text-black gap-4 text-xl">
+                <span class="text-sm sm:text-base">Event Captioner provided by</span>
                 <a href="https://developers.deepgram.com">
-                    <img src="/long-logo-white.svg" alt="Deepgram" class="w-36 sm:w-56">
+                    <img src="/long-logo-black.svg" alt="Deepgram" class="w-36 sm:w-56">
                 </a>
             </h1>
         </header>
@@ -34,7 +34,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 fixed top-[17px] right-[17px] z-10 cursor-pointer" :class="{ 'hidden': !settings.brand }" viewBox="0 0 20 20" fill="white" @click="settings.visible = !settings.visible">
                 <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
             </svg>
-            <div id="settings" class="p-4 bg-coral text-darkCharcoal top-[60px] left-0 w-full flex items-center gap-2 sm:gap-8 flex-col sm:flex-row" :class="{ hidden: !settings.visible, fixed: settings.visible, '!top-0': !settings.brand }">
+            <div id="settings" style="background: linear-gradient(270deg,#38edac 20.31%,#9ea9ff 52.6%,#fe5c5c 81.77%)" class="p-4  text-darkCharcoal top-[60px] left-0 w-full flex items-center gap-2 sm:gap-8 flex-col sm:flex-row" :class="{ hidden: !settings.visible, fixed: settings.visible, '!top-0': !settings.brand }">
                 <div class="flex items-center">
                     <span class="font-bold mr-2">Autoscroll</span>
                     <input type="radio" id="autoscroll-true" :value="true" v-model="settings.autoScroll" />
@@ -55,9 +55,17 @@
             </div>
         </div>
         <div :style="`${settings.brand ? 'min-height: calc(100vh - 3.5rem);' : 'min-height: 100vh;'}`" class="flex flex-col">
-            <div id="transcript" class="p-6 flex-1" :style="settings.string">
+            <div id="transcript" class="p-6 flex-1" :style="`${settings.string} height: 90vh`">
                 {% transcript %}
             </div>
+						<div :style="`${settings.string} height: 10vh;  position: relative;`">
+							<a href="www.deepgram.com" class="text-black py-2 px-6 text-4xl left-6 absolute font-semibold" style="background-color: #9ca3af78">Deepgram.com <div class="absolute" style="border-top: 0px solid transparent; border-bottom: 15px solid transparent; border-left: 15px solid #9ca3af78; bottom: -15px;"></div></a>
+							{{!-- border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent; 
+  
+  border-right:10px solid blue;  --}}
+
+						</div>
             <div v-if="settings.link" class="bg-veryDarkCharcoal text-2xl text-white text-center p-3">Open captions on your own device: {% location.host+location.pathname %}</div>
         </div>
 
